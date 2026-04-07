@@ -14,8 +14,9 @@ export default function App() {
   const [books, setBooks] = useState<Book[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [filter, setFilter] = useState<BookStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState('');
+  const [filter, setFilter] = useState<BookStatus | 'all'>('all');
   
   const [olSearchResults, setOlSearchResults] = useState<SearchResult[]>([]);
   const [isSearchingOl, setIsSearchingOl] = useState(false);
@@ -23,6 +24,7 @@ export default function App() {
   const [olSearchPage, setOlSearchPage] = useState(1);
   const [olTotalResults, setOlTotalResults] = useState(0);
   const [initialBookData, setInitialBookData] = useState<SearchResult | null>(null);
+  const [searchLocal, setSearchLocal] = useState(true);
 
   const handleOnlineSearch = async (page = 1) => {
     if (searchQuery.trim().length > 0) {
@@ -73,8 +75,9 @@ export default function App() {
 
   const filteredBooks = books.filter(book => {
     const matchesFilter = filter === 'all' || book.status === filter;
-    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          book.author.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !searchLocal || appliedSearchQuery === '' || 
+      book.title.toLowerCase().includes(appliedSearchQuery.toLowerCase()) ||
+      book.author.toLowerCase().includes(appliedSearchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -128,38 +131,56 @@ export default function App() {
             ))}
           </div>
 
-          <div className="relative w-full sm:w-72">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-foreground whitespace-nowrap bg-white/50 backdrop-blur-sm px-4 py-3 rounded-full border border-border/50 shadow-soft hover:bg-white/80 transition-colors">
+              <input
+                type="checkbox"
+                checked={searchLocal}
+                onChange={(e) => setSearchLocal(e.target.checked)}
+                className="w-4 h-4 rounded border-border/50 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+              />
+              내 책장 검색
+            </label>
+            <div className="relative w-full sm:w-72">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-muted-foreground" />
             </div>
             <input
               type="text"
-              placeholder="내 책장 검색 (엔터 시 온라인 검색)"
+              placeholder={searchLocal ? "내 책장 검색" : "알라딘 도서 검색"}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 if (e.target.value.trim() === '') {
                   clearOnlineSearch();
+                  setAppliedSearchQuery('');
                 }
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleOnlineSearch(1);
+                if (e.key === 'Enter') {
+                  if (searchLocal) {
+                    setAppliedSearchQuery(searchQuery);
+                  } else {
+                    handleOnlineSearch(1);
+                  }
+                }
               }}
               className="w-full pl-12 pr-6 py-3.5 bg-white/50 border border-border rounded-full text-sm focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all shadow-sm font-medium"
             />
-            {isSearchingOl && (
-              <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                <Loader2 className="h-5 w-5 text-primary/70 animate-spin" />
-              </div>
-            )}
+            {isSearchingOl && !searchLocal && (
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <Loader2 className="h-5 w-5 text-primary/70 animate-spin" />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Local Library Title Separator */}
-        {(searchQuery.trim().length > 0) && (
+        {(searchLocal && appliedSearchQuery.trim().length > 0) && (
           <h2 className="text-xl font-bold mb-6 text-foreground flex items-center gap-2">
             <Library className="w-5 h-5 text-primary" />
-            내 책장 필터 결과
+            내 책장 검색 결과
           </h2>
         )}
 
