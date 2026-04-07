@@ -5,6 +5,7 @@ import { Dashboard } from './components/Dashboard';
 import { BookCard } from './components/BookCard';
 import { AddBookModal } from './components/AddBookModal';
 import { BookDetailsModal } from './components/BookDetailsModal';
+import { SearchResultModal } from './components/SearchResultModal';
 import { Plus, Library, Search, Loader2, Image as ImageIcon } from 'lucide-react';
 import { cn } from './lib/utils';
 import { searchBooks, SearchResult } from './lib/api';
@@ -19,13 +20,23 @@ export default function App() {
   const [olSearchResults, setOlSearchResults] = useState<SearchResult[]>([]);
   const [isSearchingOl, setIsSearchingOl] = useState(false);
   const [hasSearchedOl, setHasSearchedOl] = useState(false);
+  const [olSearchPage, setOlSearchPage] = useState(1);
+  const [olTotalResults, setOlTotalResults] = useState(0);
   const [initialBookData, setInitialBookData] = useState<SearchResult | null>(null);
 
-  const handleOnlineSearch = async () => {
+  const handleOnlineSearch = async (page = 1) => {
     if (searchQuery.trim().length > 0) {
       setIsSearchingOl(true);
-      const results = await searchBooks(searchQuery);
-      setOlSearchResults(results);
+      const { books, totalResults } = await searchBooks(searchQuery, page, 5);
+      
+      if (page === 1) {
+        setOlSearchResults(books);
+      } else {
+        setOlSearchResults(prev => [...prev, ...books]);
+      }
+      
+      setOlTotalResults(totalResults);
+      setOlSearchPage(page);
       setIsSearchingOl(false);
       setHasSearchedOl(true);
     }
@@ -34,11 +45,14 @@ export default function App() {
   const clearOnlineSearch = () => {
     setOlSearchResults([]);
     setHasSearchedOl(false);
+    setOlSearchPage(1);
+    setOlTotalResults(0);
   };
 
   const handleSelectOlBook = (book: SearchResult) => {
     setInitialBookData(book);
     setIsAddModalOpen(true);
+    setHasSearchedOl(false); // Close the search result modal
   };
 
   useEffect(() => {
@@ -98,7 +112,7 @@ export default function App() {
         {/* Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12 mt-16">
           <div className="flex bg-white/50 backdrop-blur-sm rounded-full p-1.5 border border-border/50 shadow-soft w-full sm:w-auto overflow-x-auto hide-scrollbar">
-            {(['all', 'reading', 'completed', 'want-to-read'] as const).map((f) => (
+            {(['all', 'reading', 'want-to-read', 'completed'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -109,7 +123,7 @@ export default function App() {
                     : "text-muted-foreground hover:text-foreground hover:bg-white/60"
                 )}
               >
-                {f === 'all' ? '전체' : f === 'reading' ? '읽는 중' : f === 'completed' ? '완독' : '읽고 싶은 책'}
+                {f === 'all' ? '전체' : f === 'reading' ? '읽는 중' : f === 'want-to-read' ? '읽고 싶은 책' : '완독'}
               </button>
             ))}
           </div>
@@ -129,7 +143,7 @@ export default function App() {
                 }
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleOnlineSearch();
+                if (e.key === 'Enter') handleOnlineSearch(1);
               }}
               className="w-full pl-12 pr-6 py-3.5 bg-white/50 border border-border rounded-full text-sm focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all shadow-sm font-medium"
             />
@@ -141,67 +155,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Online Search Results */}
-        {hasSearchedOl && (
-          <div className="mb-12">
-            <h2 className="text-xl font-bold mb-6 text-foreground flex items-center gap-2">
-              <Search className="w-5 h-5 text-primary" />
-              알라딘 도서 검색 결과
-            </h2>
-            {isSearchingOl ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-              </div>
-            ) : olSearchResults.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8 border-b border-border/50 pb-12">
-                {olSearchResults.map((book) => (
-                  <div
-                    key={book.id}
-                    onClick={() => handleSelectOlBook(book)}
-                    className="group cursor-pointer bg-white/50 backdrop-blur-sm border border-border shadow-soft rounded-2xl p-4 hover:shadow-float hover:-translate-y-1 transition-all duration-300"
-                  >
-                    <div className="aspect-[2/3] overflow-hidden rounded-xl bg-muted/30 mb-4 shadow-inner relative w-full">
-                      {book.coverImage ? (
-                        <img 
-                          src={book.coverImage} 
-                          alt={book.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
-                          <Plus className="w-3 h-3" />
-                          기록하기
-                        </span>
-                      </div>
-                    </div>
-                    <h3 className="font-bold text-foreground text-sm line-clamp-2 mb-1 group-hover:text-primary transition-colors">
-                      {book.title}
-                    </h3>
-                    <p className="text-xs font-medium text-muted-foreground line-clamp-1">
-                      {book.author}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-white/30 backdrop-blur-sm rounded-2xl border border-border/50 mb-12">
-                <p className="text-muted-foreground font-medium flex items-center justify-center gap-2">
-                  <Search className="w-4 h-4" />
-                  온라인 검색 결과가 없습니다.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Local Library Title Separator */}
-        {(hasSearchedOl || searchQuery) && (
+        {(searchQuery.trim().length > 0) && (
           <h2 className="text-xl font-bold mb-6 text-foreground flex items-center gap-2">
             <Library className="w-5 h-5 text-primary" />
             내 책장 필터 결과
@@ -270,6 +225,17 @@ export default function App() {
         isOpen={!!selectedBook} 
         onClose={() => setSelectedBook(null)} 
         onDelete={handleDeleteBook}
+      />
+
+      <SearchResultModal
+        isOpen={hasSearchedOl}
+        onClose={clearOnlineSearch}
+        results={olSearchResults}
+        isSearching={isSearchingOl}
+        onSelectBook={handleSelectOlBook}
+        searchQuery={searchQuery}
+        totalResults={olTotalResults}
+        onLoadMore={() => handleOnlineSearch(olSearchPage + 1)}
       />
     </div>
   );

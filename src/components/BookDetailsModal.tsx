@@ -71,7 +71,7 @@ export function BookDetailsModal({ book, isOpen, onClose, onDelete }: BookDetail
         </div>
 
         {/* Right column: Details */}
-        <div className="w-full md:w-3/5 flex flex-col max-h-[90vh] overflow-y-auto relative z-10">
+        <div className="w-full md:w-3/5 flex flex-col max-h-[90vh] overflow-y-auto hide-scrollbar relative z-10">
           <div className="sticky top-0 bg-[#FEFEFA]/90 backdrop-blur-md px-8 py-6 flex items-start justify-between border-b border-border/50 z-10">
             <div>
               <div className="inline-block px-3 py-1.5 rounded-full bg-white border border-border shadow-sm text-foreground text-xs font-bold mb-3">
@@ -89,7 +89,7 @@ export function BookDetailsModal({ book, isOpen, onClose, onDelete }: BookDetail
           </div>
 
           <div className="p-8 space-y-8 flex-grow">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star 
@@ -100,15 +100,6 @@ export function BookDetailsModal({ book, isOpen, onClose, onDelete }: BookDetail
                     )} 
                   />
                 ))}
-              </div>
-              <div className="flex gap-2">
-                <button 
-                  onClick={handleDelete}
-                  className="p-2.5 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
-                  title="삭제"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
               </div>
             </div>
 
@@ -144,6 +135,16 @@ export function BookDetailsModal({ book, isOpen, onClose, onDelete }: BookDetail
                 </div>
               )}
             </div>
+          </div>
+          
+          <div className="sticky bottom-0 bg-[#FEFEFA]/90 backdrop-blur-md px-8 py-6 border-t border-border/50 flex justify-end gap-4 z-10 w-full mt-auto">
+            <button
+              onClick={handleDelete}
+              className="px-6 py-3 rounded-full text-destructive font-bold border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/5 transition-all flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              기록 삭제하기
+            </button>
           </div>
         </div>
       </div>

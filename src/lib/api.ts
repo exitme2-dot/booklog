@@ -9,8 +9,8 @@ export interface SearchResult {
 
 const TTB_KEY = 'ttbexitme2156001';
 
-export async function searchBooks(query: string): Promise<SearchResult[]> {
-  if (!query.trim()) return [];
+export async function searchBooks(query: string, start: number = 1, maxResults: number = 5): Promise<{ books: SearchResult[], totalResults: number }> {
+  if (!query.trim()) return { books: [], totalResults: 0 };
   
   try {
     const response = await axios.get('/aladin-api/ItemSearch.aspx', {
@@ -18,25 +18,29 @@ export async function searchBooks(query: string): Promise<SearchResult[]> {
         ttbkey: TTB_KEY,
         Query: query,
         QueryType: 'Title',
-        MaxResults: 5,
-        start: 1,
+        MaxResults: maxResults,
+        start: start,
         SearchTarget: 'Book',
         output: 'js',
         Version: '20131101'
       }
     });
     
-    const books = response.data.item;
-    if (!books) return [];
+    const items = response.data.item;
+    const totalResults = response.data.totalResults || 0;
     
-    return books.map((doc: any) => ({
+    if (!items) return { books: [], totalResults: 0 };
+    
+    const books = items.map((doc: any) => ({
       id: doc.isbn13 || doc.isbn || doc.itemId.toString(),
       title: doc.title || '제목 없음',
       author: doc.author || '저자 미상',
       coverImage: doc.cover || undefined
     }));
+
+    return { books, totalResults };
   } catch (error) {
     console.error('Error searching books:', error);
-    return [];
+    return { books: [], totalResults: 0 };
   }
 }

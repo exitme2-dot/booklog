@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Book, BookStatus } from '../types';
-import { X, Star, Image as ImageIcon } from 'lucide-react';
+import { X, Star, Image as ImageIcon, Search, Loader2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from '../lib/utils';
-import { SearchResult } from '../lib/api';
+import { searchBooks, SearchResult } from '../lib/api';
 
 interface AddBookModalProps {
   isOpen: boolean;
@@ -22,6 +22,37 @@ export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBoo
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchContainerRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(async () => {
+      // Only search if user typed something and it's not exactly what was just filled from a click
+      if (title.trim().length > 1 && showDropdown) {
+        setIsSearching(true);
+        const results = await searchBooks(title);
+        setSearchResults(results);
+        setIsSearching(false);
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [title, isOpen, showDropdown]);
+
   useEffect(() => {
     if (isOpen) {
       setTitle(initialBookData?.title || '');
@@ -32,6 +63,8 @@ export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBoo
       setReview('');
       setStartDate('');
       setEndDate('');
+      setShowDropdown(false);
+      setSearchResults([]);
     }
   }, [isOpen, initialBookData]);
 
@@ -71,7 +104,7 @@ export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBoo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/20 backdrop-blur-sm">
       <div 
-        className="bg-[#FEFEFA] rounded-[2rem] shadow-float border border-border/50 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
+        className="bg-[#FEFEFA] rounded-[2rem] shadow-float border border-border/50 w-full max-w-2xl max-h-[90vh] overflow-y-auto hide-scrollbar relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-accent/30 blur-3xl rounded-full mix-blend-multiply -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -89,16 +122,65 @@ export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBoo
         <form onSubmit={handleSubmit} className="p-8 space-y-8 relative z-0">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-bold text-foreground mb-2">제목 *</label>
-                <input 
-                  type="text" 
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-5 py-3.5 bg-white/50 rounded-full border border-border focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all font-medium"
-                  placeholder="책 제목을 입력하세요"
-                />
+              <div ref={searchContainerRef} className="relative z-20">
+                <label className="block text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                  <Search className="w-4 h-4 text-primary" /> 제목 검색 및 입력 *
+                </label>
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    required
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      setShowDropdown(true);
+                    }}
+                    onFocus={() => {
+                      if (title.trim().length > 1) setShowDropdown(true);
+                    }}
+                    className="w-full px-5 py-3.5 bg-white/50 rounded-full border border-border focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all font-medium pr-10"
+                    placeholder="등록할 책 제목을 검색하세요"
+                    autoComplete="off"
+                  />
+                  {isSearching && (
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                      <Loader2 className="h-5 w-5 text-primary/70 animate-spin" />
+                    </div>
+                  )}
+                </div>
+
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute z-30 w-full mt-2 bg-white rounded-2xl shadow-float border border-border/50 overflow-hidden max-h-64 overflow-y-auto hide-scrollbar">
+                    <div className="px-4 py-2 bg-muted/40 border-b border-border/50 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                      알라딘 검색 결과
+                    </div>
+                    {searchResults.map((book) => (
+                      <button
+                        key={book.id}
+                        type="button"
+                        onClick={() => {
+                          setTitle(book.title);
+                          setAuthor(book.author);
+                          setCoverImage(book.coverImage || '');
+                          setShowDropdown(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-muted/50 flex items-start gap-4 border-b border-border/50 last:border-0 transition-colors"
+                      >
+                        {book.coverImage ? (
+                          <img src={book.coverImage} alt={book.title} className="w-10 h-14 object-cover rounded-lg bg-muted flex-shrink-0 shadow-sm" referrerPolicy="no-referrer" />
+                        ) : (
+                          <div className="w-10 h-14 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 border border-border/50">
+                            <ImageIcon className="w-4 h-4 text-muted-foreground/50" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-foreground truncate text-sm">{book.title}</p>
+                          <p className="text-xs font-medium text-muted-foreground truncate leading-relaxed">{book.author}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div>

@@ -18,9 +18,9 @@ export function Dashboard({ books }: DashboardProps) {
     : '0.0';
 
   const stats = [
-    { label: '완독한 책', value: completedCount, icon: CheckCircle, radius: 'rounded-[2rem] rounded-tr-[4rem]' },
-    { label: '읽는 중', value: readingCount, icon: BookOpen, radius: 'rounded-[2rem] rounded-bl-[4rem]' },
-    { label: '읽고 싶은 책', value: wantToReadCount, icon: Clock, radius: 'rounded-[2rem] rounded-tl-[4rem]' },
+    { label: '읽는 중', value: readingCount, icon: BookOpen, radius: 'rounded-[2rem] rounded-tr-[4rem]' },
+    { label: '읽고 싶은 책', value: wantToReadCount, icon: Clock, radius: 'rounded-[2rem] rounded-bl-[4rem]' },
+    { label: '완독한 책', value: completedCount, icon: CheckCircle, radius: 'rounded-[2rem] rounded-tl-[4rem]' },
     { label: '평균 별점', value: averageRating, icon: Star, radius: 'rounded-[2rem] rounded-br-[4rem]' },
   ];
 
