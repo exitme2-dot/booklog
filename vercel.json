@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/aladin-api/(.*)",
+      "destination": "http://www.aladin.co.kr/ttb/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
