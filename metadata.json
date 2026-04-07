@@ -1,0 +1,5 @@
+{
+  "name": "BookLog",
+  "description": "A personal reading record and book tracking application.",
+  "requestFramePermissions": []
+}
