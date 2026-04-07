@@ -1,14 +1,4 @@
-export interface OpenLibraryBook {
-  key: string;
-  title: string;
-  author_name?: string[];
-  cover_i?: number;
-}
-
-export interface OpenLibrarySearchResponse {
-  numFound: number;
-  docs: OpenLibraryBook[];
-}
+import axios from 'axios';
 
 export interface SearchResult {
   id: string;
@@ -17,27 +7,33 @@ export interface SearchResult {
   coverImage?: string;
 }
 
+const TTB_KEY = 'ttbexitme2156001';
+
 export async function searchBooks(query: string): Promise<SearchResult[]> {
   if (!query.trim()) return [];
   
   try {
-    const response = await fetch(
-      `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=5`
-    );
+    const response = await axios.get('/aladin-api/ItemSearch.aspx', {
+      params: {
+        ttbkey: TTB_KEY,
+        Query: query,
+        QueryType: 'Title',
+        MaxResults: 5,
+        start: 1,
+        SearchTarget: 'Book',
+        output: 'js',
+        Version: '20131101'
+      }
+    });
     
-    if (!response.ok) {
-      throw new Error('Failed to fetch books');
-    }
+    const books = response.data.item;
+    if (!books) return [];
     
-    const data: OpenLibrarySearchResponse = await response.json();
-    
-    return data.docs.map(doc => ({
-      id: doc.key,
-      title: doc.title,
-      author: doc.author_name ? doc.author_name.join(', ') : 'Unknown Author',
-      coverImage: doc.cover_i 
-        ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
-        : undefined
+    return books.map((doc: any) => ({
+      id: doc.isbn13 || doc.isbn || doc.itemId.toString(),
+      title: doc.title || '제목 없음',
+      author: doc.author || '저자 미상',
+      coverImage: doc.cover || undefined
     }));
   } catch (error) {
     console.error('Error searching books:', error);

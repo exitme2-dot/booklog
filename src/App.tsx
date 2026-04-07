@@ -152,7 +152,7 @@ export default function App() {
             {showOlDropdown && olSearchResults.length > 0 && (
               <div className="absolute z-20 w-full mt-2 bg-white rounded-2xl shadow-float border border-border/50 overflow-hidden max-h-80 overflow-y-auto">
                 <div className="px-4 py-2 bg-muted/40 border-b border-border/50 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Open Library 검색 결과
+                  알라딘 도서 검색 결과
                 </div>
                 {olSearchResults.map((book) => (
                   <button
@@ -193,6 +193,19 @@ export default function App() {
                 index={index}
               />
             ))}
+            
+            <button
+              onClick={() => {
+                setInitialBookData(null);
+                setIsAddModalOpen(true);
+              }}
+              className="flex flex-col items-center justify-center gap-4 bg-[#FEFEFA] border-2 border-dashed border-border/80 rounded-2xl hover:border-primary/50 hover:bg-white/50 transition-all duration-300 group min-h-[220px]"
+            >
+              <div className="w-14 h-14 bg-primary/10 rounded-[1.5rem] flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
+                <Plus className="w-7 h-7 text-primary" />
+              </div>
+              <span className="font-bold text-muted-foreground group-hover:text-foreground transition-colors">도서 추가</span>
+            </button>
           </div>
         ) : (
           <div className="text-center py-32 bg-[#FEFEFA] rounded-[3rem] border border-border/50 shadow-soft relative overflow-hidden">
