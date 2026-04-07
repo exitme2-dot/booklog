@@ -18,42 +18,27 @@ export default function App() {
   
   const [olSearchResults, setOlSearchResults] = useState<SearchResult[]>([]);
   const [isSearchingOl, setIsSearchingOl] = useState(false);
-  const [showOlDropdown, setShowOlDropdown] = useState(false);
+  const [hasSearchedOl, setHasSearchedOl] = useState(false);
   const [initialBookData, setInitialBookData] = useState<SearchResult | null>(null);
 
-  const searchRef = React.useRef<HTMLDivElement>(null);
+  const handleOnlineSearch = async () => {
+    if (searchQuery.trim().length > 0) {
+      setIsSearchingOl(true);
+      const results = await searchBooks(searchQuery);
+      setOlSearchResults(results);
+      setIsSearchingOl(false);
+      setHasSearchedOl(true);
+    }
+  };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowOlDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (searchQuery.trim().length > 1) {
-        setIsSearchingOl(true);
-        const results = await searchBooks(searchQuery);
-        setOlSearchResults(results);
-        setIsSearchingOl(false);
-        setShowOlDropdown(true);
-      } else {
-        setOlSearchResults([]);
-        setShowOlDropdown(false);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const clearOnlineSearch = () => {
+    setOlSearchResults([]);
+    setHasSearchedOl(false);
+  };
 
   const handleSelectOlBook = (book: SearchResult) => {
     setInitialBookData(book);
     setIsAddModalOpen(true);
-    setShowOlDropdown(false);
-    setSearchQuery('');
   };
 
   useEffect(() => {
@@ -129,17 +114,22 @@ export default function App() {
             ))}
           </div>
 
-          <div ref={searchRef} className="relative w-full sm:w-72">
+          <div className="relative w-full sm:w-72">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-muted-foreground" />
             </div>
             <input
               type="text"
-              placeholder="내 책장 및 온라인 검색..."
+              placeholder="내 책장 검색 (엔터 시 온라인 검색)"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => {
-                if (olSearchResults.length > 0) setShowOlDropdown(true);
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.trim() === '') {
+                  clearOnlineSearch();
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleOnlineSearch();
               }}
               className="w-full pl-12 pr-6 py-3.5 bg-white/50 border border-border rounded-full text-sm focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all shadow-sm font-medium"
             />
@@ -148,39 +138,75 @@ export default function App() {
                 <Loader2 className="h-5 w-5 text-primary/70 animate-spin" />
               </div>
             )}
-            
-            {showOlDropdown && olSearchResults.length > 0 && (
-              <div className="absolute z-20 w-full mt-2 bg-white rounded-2xl shadow-float border border-border/50 overflow-hidden max-h-80 overflow-y-auto">
-                <div className="px-4 py-2 bg-muted/40 border-b border-border/50 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  알라딘 도서 검색 결과
-                </div>
+          </div>
+        </div>
+
+        {/* Online Search Results */}
+        {hasSearchedOl && (
+          <div className="mb-12">
+            <h2 className="text-xl font-bold mb-6 text-foreground flex items-center gap-2">
+              <Search className="w-5 h-5 text-primary" />
+              알라딘 도서 검색 결과
+            </h2>
+            {isSearchingOl ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              </div>
+            ) : olSearchResults.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 sm:gap-8 border-b border-border/50 pb-12">
                 {olSearchResults.map((book) => (
-                  <button
+                  <div
                     key={book.id}
-                    type="button"
                     onClick={() => handleSelectOlBook(book)}
-                    className="w-full px-4 py-3 text-left hover:bg-muted/50 flex items-start gap-4 border-b border-border/50 last:border-0 transition-colors"
+                    className="group cursor-pointer bg-white/50 backdrop-blur-sm border border-border shadow-soft rounded-2xl p-4 hover:shadow-float hover:-translate-y-1 transition-all duration-300"
                   >
-                    {book.coverImage ? (
-                      <img src={book.coverImage} alt={book.title} className="w-12 h-16 object-cover rounded-lg bg-muted flex-shrink-0 shadow-sm" referrerPolicy="no-referrer" />
-                    ) : (
-                      <div className="w-12 h-16 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 border border-border/50">
-                        <ImageIcon className="w-5 h-5 text-muted-foreground/50" />
+                    <div className="aspect-[2/3] overflow-hidden rounded-xl bg-muted/30 mb-4 shadow-inner relative w-full">
+                      {book.coverImage ? (
+                        <img 
+                          src={book.coverImage} 
+                          alt={book.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                          <Plus className="w-3 h-3" />
+                          기록하기
+                        </span>
                       </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-foreground truncate">{book.title}</p>
-                      <p className="text-sm font-medium text-muted-foreground truncate leading-relaxed">{book.author}</p>
-                      <span className="inline-block mt-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                        새로 기록하기
-                      </span>
                     </div>
-                  </button>
+                    <h3 className="font-bold text-foreground text-sm line-clamp-2 mb-1 group-hover:text-primary transition-colors">
+                      {book.title}
+                    </h3>
+                    <p className="text-xs font-medium text-muted-foreground line-clamp-1">
+                      {book.author}
+                    </p>
+                  </div>
                 ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white/30 backdrop-blur-sm rounded-2xl border border-border/50 mb-12">
+                <p className="text-muted-foreground font-medium flex items-center justify-center gap-2">
+                  <Search className="w-4 h-4" />
+                  온라인 검색 결과가 없습니다.
+                </p>
               </div>
             )}
           </div>
-        </div>
+        )}
+
+        {/* Local Library Title Separator */}
+        {(hasSearchedOl || searchQuery) && (
+          <h2 className="text-xl font-bold mb-6 text-foreground flex items-center gap-2">
+            <Library className="w-5 h-5 text-primary" />
+            내 책장 필터 결과
+          </h2>
+        )}
 
         {/* Book Grid */}
         {filteredBooks.length > 0 ? (
