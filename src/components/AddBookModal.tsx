@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Book, BookStatus } from '../types';
 import { X, Star, Image as ImageIcon } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from '../lib/utils';
+import { SearchResult } from '../lib/api';
 
 interface AddBookModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (book: Book) => void;
+  initialBookData?: SearchResult | null;
 }
 
-export function AddBookModal({ isOpen, onClose, onAdd }: AddBookModalProps) {
+export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBookModalProps) {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [coverImage, setCoverImage] = useState('');
@@ -19,6 +21,19 @@ export function AddBookModal({ isOpen, onClose, onAdd }: AddBookModalProps) {
   const [review, setReview] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setTitle(initialBookData?.title || '');
+      setAuthor(initialBookData?.author || '');
+      setCoverImage(initialBookData?.coverImage || '');
+      setStatus('want-to-read');
+      setRating(0);
+      setReview('');
+      setStartDate('');
+      setEndDate('');
+    }
+  }, [isOpen, initialBookData]);
 
   if (!isOpen) return null;
 
@@ -54,61 +69,63 @@ export function AddBookModal({ isOpen, onClose, onAdd }: AddBookModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/20 backdrop-blur-sm">
       <div 
-        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-[#FEFEFA] rounded-[2rem] shadow-float border border-border/50 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-stone-100 px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="text-xl font-serif font-semibold text-stone-900">새로운 책 기록하기</h2>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/30 blur-3xl rounded-full mix-blend-multiply -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        
+        <div className="sticky top-0 bg-[#FEFEFA]/80 backdrop-blur-md border-b border-border/50 px-8 py-6 flex items-center justify-between z-10">
+          <h2 className="text-2xl font-bold text-foreground">새로운 책 기록하기</h2>
           <button 
             onClick={onClose}
-            className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-full transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="p-8 space-y-8 relative z-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">제목 *</label>
+                <label className="block text-sm font-bold text-foreground mb-2">제목 *</label>
                 <input 
                   type="text" 
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all"
+                  className="w-full px-5 py-3.5 bg-white/50 rounded-full border border-border focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all font-medium"
                   placeholder="책 제목을 입력하세요"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">저자 *</label>
+                <label className="block text-sm font-bold text-foreground mb-2">저자 *</label>
                 <input 
                   type="text" 
                   required
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all"
+                  className="w-full px-5 py-3.5 bg-white/50 rounded-full border border-border focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all font-medium"
                   placeholder="저자를 입력하세요"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">상태</label>
-                <div className="grid grid-cols-3 gap-2">
+                <label className="block text-sm font-bold text-foreground mb-2">상태</label>
+                <div className="flex flex-col gap-2">
                   {(['want-to-read', 'reading', 'completed'] as BookStatus[]).map((s) => (
                     <button
                       key={s}
                       type="button"
                       onClick={() => setStatus(s)}
                       className={cn(
-                        "px-3 py-2 text-sm font-medium rounded-lg border transition-colors",
+                        "px-5 py-3 text-sm font-bold rounded-full border transition-all duration-300",
                         status === s 
-                          ? "bg-stone-900 text-white border-stone-900" 
-                          : "bg-white text-stone-600 border-stone-200 hover:bg-stone-50"
+                          ? "bg-primary text-primary-foreground border-primary shadow-soft" 
+                          : "bg-white/50 text-muted-foreground border-border hover:bg-white hover:text-foreground"
                       )}
                     >
                       {s === 'want-to-read' ? '읽고 싶은 책' : s === 'reading' ? '읽는 중' : '완독'}
@@ -118,19 +135,19 @@ export function AddBookModal({ isOpen, onClose, onAdd }: AddBookModalProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">별점</label>
-                <div className="flex items-center gap-1">
+                <label className="block text-sm font-bold text-foreground mb-2">별점</label>
+                <div className="flex items-center gap-1 bg-white/50 border border-border rounded-full px-4 py-2 w-fit">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
                       onClick={() => setRating(star)}
-                      className="p-1 focus:outline-none"
+                      className="p-1.5 focus:outline-none hover:scale-110 transition-transform"
                     >
                       <Star 
                         className={cn(
-                          "w-8 h-8 transition-colors", 
-                          star <= rating ? "fill-amber-400 text-amber-400" : "fill-stone-100 text-stone-200 hover:fill-amber-200 hover:text-amber-200"
+                          "w-7 h-7 transition-colors", 
+                          star <= rating ? "fill-secondary text-secondary" : "fill-muted text-border hover:fill-secondary/50 hover:text-secondary/50"
                         )} 
                       />
                     </button>
@@ -139,25 +156,25 @@ export function AddBookModal({ isOpen, onClose, onAdd }: AddBookModalProps) {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">표지 이미지 URL</label>
+                <label className="block text-sm font-bold text-foreground mb-2">표지 이미지 URL</label>
                 <div className="flex gap-2">
                   <div className="relative flex-grow">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <ImageIcon className="h-4 w-4 text-stone-400" />
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <input 
                       type="url" 
                       value={coverImage}
                       onChange={(e) => setCoverImage(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all"
+                      className="w-full pl-12 pr-5 py-3.5 bg-white/50 rounded-full border border-border focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all font-medium"
                       placeholder="https://..."
                     />
                   </div>
                 </div>
                 {coverImage && (
-                  <div className="mt-3 aspect-[2/3] w-32 rounded-lg overflow-hidden border border-stone-200 bg-stone-100">
+                  <div className="mt-4 aspect-[2/3] w-32 rounded-[1.5rem] overflow-hidden border border-border/50 bg-muted/30 shadow-soft">
                     <img src={coverImage} alt="Cover preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   </div>
                 )}
@@ -165,21 +182,21 @@ export function AddBookModal({ isOpen, onClose, onAdd }: AddBookModalProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">시작일</label>
+                  <label className="block text-sm font-bold text-foreground mb-2">시작일</label>
                   <input 
                     type="date" 
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-stone-700"
+                    className="w-full px-5 py-3.5 bg-white/50 rounded-full border border-border focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all text-foreground font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">종료일</label>
+                  <label className="block text-sm font-bold text-foreground mb-2">종료일</label>
                   <input 
                     type="date" 
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all text-stone-700"
+                    className="w-full px-5 py-3.5 bg-white/50 rounded-full border border-border focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all text-foreground font-medium"
                   />
                 </div>
               </div>
@@ -187,27 +204,27 @@ export function AddBookModal({ isOpen, onClose, onAdd }: AddBookModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">리뷰 및 메모</label>
+            <label className="block text-sm font-bold text-foreground mb-2">리뷰 및 메모</label>
             <textarea 
               value={review}
               onChange={(e) => setReview(e.target.value)}
-              rows={4}
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all resize-none"
+              rows={5}
+              className="w-full px-6 py-4 bg-white/50 rounded-[2rem] border border-border focus:outline-none focus-visible:ring-2 ring-primary/30 ring-offset-2 transition-all resize-none font-medium"
               placeholder="책에 대한 감상이나 기억하고 싶은 문장을 남겨보세요."
             />
           </div>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-stone-100">
+          <div className="pt-6 flex justify-end gap-4 border-t border-border/50">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-stone-600 font-medium hover:bg-stone-100 transition-colors"
+              className="px-8 py-3.5 rounded-full text-secondary font-bold border-2 border-secondary hover:bg-secondary/5 transition-colors"
             >
               취소
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-stone-900 text-white font-medium hover:bg-stone-800 transition-colors shadow-md shadow-stone-900/10"
+              className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground font-bold hover:scale-105 active:scale-95 transition-all duration-300 shadow-soft hover:shadow-[0_6px_24px_-4px_rgba(93,112,82,0.25)]"
             >
               저장하기
             </button>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Book } from '../types';
 import { BookOpen, CheckCircle, Clock, Star } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface DashboardProps {
   books: Book[];
@@ -17,24 +18,32 @@ export function Dashboard({ books }: DashboardProps) {
     : '0.0';
 
   const stats = [
-    { label: '완독한 책', value: completedCount, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: '읽는 중', value: readingCount, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: '읽고 싶은 책', value: wantToReadCount, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: '평균 별점', value: averageRating, icon: Star, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { label: '완독한 책', value: completedCount, icon: CheckCircle, radius: 'rounded-[2rem] rounded-tr-[4rem]' },
+    { label: '읽는 중', value: readingCount, icon: BookOpen, radius: 'rounded-[2rem] rounded-bl-[4rem]' },
+    { label: '읽고 싶은 책', value: wantToReadCount, icon: Clock, radius: 'rounded-[2rem] rounded-tl-[4rem]' },
+    { label: '평균 별점', value: averageRating, icon: Star, radius: 'rounded-[2rem] rounded-br-[4rem]' },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8">
       {stats.map((stat, i) => {
         const Icon = stat.icon;
         return (
-          <div key={i} className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex items-center gap-4">
-            <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
-              <Icon className="w-6 h-6" />
+          <div 
+            key={i} 
+            className={cn(
+              "group bg-[#FEFEFA] p-6 border border-border/50 shadow-soft flex flex-col gap-4 transition-all duration-500 hover:-translate-y-1 hover:shadow-float relative overflow-hidden",
+              stat.radius
+            )}
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 blur-2xl rounded-full mix-blend-multiply -translate-y-1/2 translate-x-1/2" />
+            
+            <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+              <Icon className="w-7 h-7" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-stone-500">{stat.label}</p>
-              <p className="text-2xl font-bold text-stone-900">{stat.value}</p>
+            <div className="mt-2">
+              <p className="text-sm font-bold text-muted-foreground mb-1">{stat.label}</p>
+              <p className="text-4xl font-serif font-bold text-foreground group-hover:scale-110 origin-left transition-transform duration-300">{stat.value}</p>
             </div>
           </div>
         );
