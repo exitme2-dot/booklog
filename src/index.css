@@ -23,6 +23,9 @@
 }
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
   body {
     @apply bg-background text-foreground antialiased relative min-h-screen overflow-x-hidden;
   }
@@ -47,5 +50,18 @@
   
   .organic-shape-3 {
     border-radius: 50% 50% 30% 70% / 50% 50% 70% 30%;
+  }
+
+  .custom-date-input::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
   }
 }

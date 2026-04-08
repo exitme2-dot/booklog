@@ -14,12 +14,23 @@ interface SearchResultModalProps {
 }
 
 export function SearchResultModal({ isOpen, onClose, results, isSearching, onSelectBook, searchQuery, totalResults, onLoadMore }: SearchResultModalProps) {
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/20 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="bg-[#FEFEFA] rounded-[2rem] shadow-float border border-border/50 w-full max-w-5xl max-h-[90vh] overflow-y-auto hide-scrollbar relative flex flex-col"
+        className="bg-[#FEFEFA] rounded-[2rem] shadow-float border border-border/50 w-full max-w-5xl max-h-[90vh] overflow-y-auto overflow-x-hidden hide-scrollbar relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-3xl rounded-full mix-blend-multiply -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -42,7 +53,7 @@ export function SearchResultModal({ isOpen, onClose, results, isSearching, onSel
           </button>
         </div>
 
-        <div className="p-8 relative z-0 flex-grow">
+        <div className="p-8 relative z-0">
           {results.length === 0 && isSearching ? (
             <div className="flex justify-center items-center py-20">
               <Loader2 className="w-10 h-10 text-primary animate-spin" />

@@ -13,6 +13,17 @@ interface BookDetailsModalProps {
 }
 
 export function BookDetailsModal({ book, isOpen, onClose, onDelete }: BookDetailsModalProps) {
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen || !book) return null;
 
   const statusLabels = {
@@ -40,7 +51,7 @@ export function BookDetailsModal({ book, isOpen, onClose, onDelete }: BookDetail
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/20 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="bg-[#FEFEFA] rounded-[2rem] shadow-float border border-border/50 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row relative"
+        className="bg-[#FEFEFA] rounded-[2rem] shadow-float border border-border/50 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row relative overflow-x-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 blur-3xl rounded-full mix-blend-multiply translate-y-1/2 -translate-x-1/4 pointer-events-none" />
@@ -88,7 +99,7 @@ export function BookDetailsModal({ book, isOpen, onClose, onDelete }: BookDetail
             </button>
           </div>
 
-          <div className="p-8 space-y-8 flex-grow">
+          <div className="p-8 space-y-8">
             <div className="flex items-center">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
@@ -137,7 +148,7 @@ export function BookDetailsModal({ book, isOpen, onClose, onDelete }: BookDetail
             </div>
           </div>
           
-          <div className="sticky bottom-0 bg-[#FEFEFA]/90 backdrop-blur-md px-8 py-6 border-t border-border/50 flex justify-end gap-4 z-10 w-full mt-auto">
+          <div className="sticky bottom-0 bg-[#FEFEFA]/90 backdrop-blur-md px-8 py-6 border-t border-border/50 flex justify-end gap-4 z-10 w-full mt-4">
             <button
               onClick={handleDelete}
               className="px-6 py-3 rounded-full text-destructive font-bold border-2 border-destructive/20 hover:border-destructive hover:bg-destructive/5 transition-all flex items-center gap-2"

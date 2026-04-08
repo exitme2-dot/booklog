@@ -12,6 +12,8 @@ interface BookCardProps {
 }
 
 export const BookCard = memo(function BookCard({ book, onClick, onDelete, index = 0 }: BookCardProps) {
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
   const statusConfig = {
     'reading': { icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10', label: '읽는 중' },
     'completed': { icon: CheckCircle, color: 'text-secondary', bg: 'bg-secondary/10', label: '완독' },
@@ -25,6 +27,7 @@ export const BookCard = memo(function BookCard({ book, onClick, onDelete, index 
   return (
     <div 
       onClick={() => onClick(book)}
+      onMouseLeave={() => setIsDeleting(false)}
       className={cn(
         "group flex flex-col bg-[#FEFEFA] border border-border/50 overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:rotate-1 hover:shadow-float shadow-soft",
         cardRadius
@@ -55,14 +58,21 @@ export const BookCard = memo(function BookCard({ book, onClick, onDelete, index 
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              if (window.confirm('정말 이 기록을 삭제하시겠습니까?')) {
+              if (isDeleting) {
                 onDelete(book.id);
+              } else {
+                setIsDeleting(true);
               }
             }}
-            className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-md text-destructive hover:bg-destructive hover:text-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
-            title="기록 삭제"
+            className={cn(
+              "absolute top-3 right-3 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 z-10",
+              isDeleting 
+                ? "px-3 py-1.5 bg-destructive text-white rounded-full text-xs font-bold" 
+                : "p-2 bg-white/90 backdrop-blur-md text-destructive hover:bg-destructive hover:text-white rounded-full"
+            )}
+            title={isDeleting ? "최종 삭제" : "기록 삭제"}
           >
-            <Trash2 className="w-4 h-4" />
+            {isDeleting ? "삭제 완료" : <Trash2 className="w-4 h-4" />}
           </button>
         </div>
       </div>

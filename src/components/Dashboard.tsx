@@ -41,7 +41,7 @@ export const Dashboard = memo(function Dashboard({ books }: DashboardProps) {
           <div 
             key={stat.label} 
             className={cn(
-              "group bg-[#FEFEFA] p-6 border border-border/50 shadow-soft flex flex-col gap-4 transition-all duration-500 hover:-translate-y-1 hover:shadow-float relative overflow-hidden",
+              "group bg-[#FEFEFA] px-6 py-4 border border-border/50 shadow-soft flex flex-col gap-3 transition-all duration-500 hover:-translate-y-1 hover:shadow-float relative overflow-hidden",
               stat.radius
             )}
           >
@@ -55,7 +55,7 @@ export const Dashboard = memo(function Dashboard({ books }: DashboardProps) {
                 <img src={stat.coverImage} alt={stat.value} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               </div>
             )}
-            <div className="mt-2 h-20 flex flex-col justify-end">
+            <div className="mt-1 h-16 flex flex-col justify-end">
               <p className="text-sm font-bold text-muted-foreground mb-1">{stat.label}</p>
               <p className={cn(
                 "font-serif font-bold text-foreground group-hover:scale-105 origin-left transition-transform duration-300",
