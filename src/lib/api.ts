@@ -44,3 +44,51 @@ export async function searchBooks(query: string, start: number = 1, maxResults: 
     return { books: [], totalResults: 0 };
   }
 }
+
+export async function getBestseller(): Promise<SearchResult | null> {
+  const CACHE_KEY = 'weekly_recommendation_cache';
+  const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+
+  try {
+    // Check cache
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_EXPIRY) {
+        return data;
+      }
+    }
+
+    const response = await axios.get('/aladin-api/ItemList.aspx', {
+      params: {
+        ttbkey: TTB_KEY,
+        QueryType: 'Bestseller',
+        MaxResults: 1,
+        SearchTarget: 'Book',
+        output: 'js',
+        Version: '20131101'
+      }
+    });
+
+    const item = response.data.item?.[0];
+    if (!item) return null;
+
+    const bestseller = {
+      id: item.isbn13 || item.isbn || item.itemId.toString(),
+      title: item.title,
+      author: item.author,
+      coverImage: item.cover
+    };
+
+    // Update cache
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data: bestseller,
+      timestamp: Date.now()
+    }));
+
+    return bestseller;
+  } catch (error) {
+    console.error('Error fetching bestseller:', error);
+    return null;
+  }
+}

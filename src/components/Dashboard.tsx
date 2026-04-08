@@ -1,27 +1,36 @@
-import React from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { Book } from '../types';
-import { BookOpen, CheckCircle, Clock, Star } from 'lucide-react';
+import { BookOpen, CheckCircle, Clock, Sparkles } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { getBestseller, SearchResult } from '../lib/api';
 
 interface DashboardProps {
   books: Book[];
 }
 
-export function Dashboard({ books }: DashboardProps) {
+export const Dashboard = memo(function Dashboard({ books }: DashboardProps) {
+  const [recommendedBook, setRecommendedBook] = useState<SearchResult | null>(null);
+
+  useEffect(() => {
+    getBestseller().then(setRecommendedBook);
+  }, []);
+
   const completedCount = books.filter(b => b.status === 'completed').length;
   const readingCount = books.filter(b => b.status === 'reading').length;
   const wantToReadCount = books.filter(b => b.status === 'want-to-read').length;
   
-  const ratedBooks = books.filter(b => b.rating > 0);
-  const averageRating = ratedBooks.length > 0 
-    ? (ratedBooks.reduce((acc, b) => acc + b.rating, 0) / ratedBooks.length).toFixed(1)
-    : '0.0';
-
   const stats = [
     { label: '읽는 중', value: readingCount, icon: BookOpen, radius: 'rounded-[2rem] rounded-tr-[4rem]' },
     { label: '읽고 싶은 책', value: wantToReadCount, icon: Clock, radius: 'rounded-[2rem] rounded-bl-[4rem]' },
     { label: '완독한 책', value: completedCount, icon: CheckCircle, radius: 'rounded-[2rem] rounded-tl-[4rem]' },
-    { label: '평균 별점', value: averageRating, icon: Star, radius: 'rounded-[2rem] rounded-br-[4rem]' },
+    { 
+      label: '이주의 추천 도서', 
+      value: recommendedBook ? recommendedBook.title : '불러오는 중...', 
+      icon: Sparkles, 
+      radius: 'rounded-[2rem] rounded-br-[4rem]',
+      isBook: true,
+      coverImage: recommendedBook?.coverImage
+    },
   ];
 
   return (
@@ -30,7 +39,7 @@ export function Dashboard({ books }: DashboardProps) {
         const Icon = stat.icon;
         return (
           <div 
-            key={i} 
+            key={stat.label} 
             className={cn(
               "group bg-[#FEFEFA] p-6 border border-border/50 shadow-soft flex flex-col gap-4 transition-all duration-500 hover:-translate-y-1 hover:shadow-float relative overflow-hidden",
               stat.radius
@@ -41,13 +50,21 @@ export function Dashboard({ books }: DashboardProps) {
             <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
               <Icon className="w-7 h-7" />
             </div>
-            <div className="mt-2">
+            {stat.isBook && stat.coverImage && (
+              <div className="absolute top-4 right-12 w-16 h-24 rounded-xl overflow-hidden shadow-md rotate-6 group-hover:rotate-0 group-hover:scale-110 transition-all duration-500 z-10">
+                <img src={stat.coverImage} alt={stat.value} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              </div>
+            )}
+            <div className="mt-2 h-20 flex flex-col justify-end">
               <p className="text-sm font-bold text-muted-foreground mb-1">{stat.label}</p>
-              <p className="text-4xl font-serif font-bold text-foreground group-hover:scale-110 origin-left transition-transform duration-300">{stat.value}</p>
+              <p className={cn(
+                "font-serif font-bold text-foreground group-hover:scale-105 origin-left transition-transform duration-300",
+                stat.isBook ? "text-2xl line-clamp-2 leading-tight" : "text-4xl"
+              )}>{stat.value}</p>
             </div>
           </div>
         );
       })}
     </div>
   );
-}
+});

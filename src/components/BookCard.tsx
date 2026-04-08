@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Book } from '../types';
-import { Star, BookOpen, CheckCircle, Clock } from 'lucide-react';
+import { Star, BookOpen, CheckCircle, Clock, Trash2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface BookCardProps {
   key?: React.Key;
   book: Book;
   onClick: (book: Book) => void;
+  onDelete: (id: string) => void;
   index?: number;
 }
 
-export function BookCard({ book, onClick, index = 0 }: BookCardProps) {
+export const BookCard = memo(function BookCard({ book, onClick, onDelete, index = 0 }: BookCardProps) {
   const statusConfig = {
     'reading': { icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10', label: '읽는 중' },
     'completed': { icon: CheckCircle, color: 'text-secondary', bg: 'bg-secondary/10', label: '완독' },
@@ -19,15 +20,7 @@ export function BookCard({ book, onClick, index = 0 }: BookCardProps) {
 
   const StatusIcon = statusConfig[book.status].icon;
   
-  // Cycle through different asymmetric radii for organic feel
-  const radiiPatterns = [
-    'rounded-[2rem] rounded-tl-[4rem]',
-    'rounded-[2rem] rounded-tr-[4rem]',
-    'rounded-[2rem] rounded-bl-[4rem]',
-    'rounded-[2rem] rounded-br-[4rem]',
-    'rounded-[2rem]',
-  ];
-  const cardRadius = radiiPatterns[index % radiiPatterns.length];
+  const cardRadius = 'rounded-[2rem]';
 
   return (
     <div 
@@ -52,12 +45,25 @@ export function BookCard({ book, onClick, index = 0 }: BookCardProps) {
               <span className="text-sm font-bold font-serif line-clamp-3 px-2">{book.title}</span>
             </div>
           )}
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 left-3">
             <div className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm backdrop-blur-md bg-white/90", statusConfig[book.status].color)}>
               <StatusIcon className="w-3.5 h-3.5" />
               <span>{statusConfig[book.status].label}</span>
             </div>
           </div>
+          
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              if (window.confirm('정말 이 기록을 삭제하시겠습니까?')) {
+                onDelete(book.id);
+              }
+            }}
+            className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-md text-destructive hover:bg-destructive hover:text-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+            title="기록 삭제"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
       
@@ -83,4 +89,4 @@ export function BookCard({ book, onClick, index = 0 }: BookCardProps) {
       </div>
     </div>
   );
-}
+});

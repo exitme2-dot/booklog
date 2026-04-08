@@ -54,7 +54,7 @@ export function SearchResultModal({ isOpen, onClose, results, isSearching, onSel
                 <div
                   key={book.id}
                   onClick={() => onSelectBook(book)}
-                  className="group cursor-pointer bg-white/50 backdrop-blur-sm border border-border shadow-soft rounded-2xl p-4 hover:shadow-float hover:-translate-y-1 transition-all duration-300 flex flex-col"
+                  className="group cursor-pointer bg-white/50 backdrop-blur-sm border border-border shadow-soft rounded-[2rem] p-4 hover:shadow-float hover:-translate-y-1 transition-all duration-300 flex flex-col"
                 >
                   <div className="aspect-[2/3] overflow-hidden rounded-xl bg-muted/30 mb-4 shadow-inner relative w-full">
                     {book.coverImage ? (

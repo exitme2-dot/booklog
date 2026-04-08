@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Book, BookStatus } from './types';
 import { getBooks, saveBooks } from './lib/storage';
 import { Dashboard } from './components/Dashboard';
@@ -24,7 +24,7 @@ export default function App() {
   const [olSearchPage, setOlSearchPage] = useState(1);
   const [olTotalResults, setOlTotalResults] = useState(0);
   const [initialBookData, setInitialBookData] = useState<SearchResult | null>(null);
-  const [searchLocal, setSearchLocal] = useState(true);
+  const [searchLocal, setSearchLocal] = useState(false);
 
   const handleOnlineSearch = async (page = 1) => {
     if (searchQuery.trim().length > 0) {
@@ -73,19 +73,21 @@ export default function App() {
     saveBooks(updatedBooks);
   };
 
-  const filteredBooks = books.filter(book => {
-    const matchesFilter = filter === 'all' || book.status === filter;
-    const matchesSearch = !searchLocal || appliedSearchQuery === '' || 
-      book.title.toLowerCase().includes(appliedSearchQuery.toLowerCase()) ||
-      book.author.toLowerCase().includes(appliedSearchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  const filteredBooks = useMemo(() => {
+    return books.filter(book => {
+      const matchesFilter = filter === 'all' || book.status === filter;
+      const matchesSearch = !searchLocal || appliedSearchQuery === '' || 
+        book.title.toLowerCase().includes(appliedSearchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(appliedSearchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
+  }, [books, filter, appliedSearchQuery, searchLocal]);
 
   return (
     <div className="min-h-screen pb-32 relative overflow-hidden">
-      {/* Ambient Blobs */}
-      <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-accent/40 blur-3xl rounded-full mix-blend-multiply -translate-x-1/2 -translate-y-1/2 -z-10" />
-      <div className="absolute top-40 right-0 w-[600px] h-[600px] bg-muted/60 blur-3xl rounded-full mix-blend-multiply translate-x-1/3 -z-10" />
+      {/* Ambient Blobs - Scaled down for better performance */}
+      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-accent/30 blur-2xl rounded-full mix-blend-multiply -translate-x-1/2 -translate-y-1/2 -z-10" />
+      <div className="absolute top-40 right-0 w-[300px] h-[300px] bg-muted/40 blur-2xl rounded-full mix-blend-multiply translate-x-1/3 -z-10" />
 
       {/* Header */}
       <header className="sticky top-4 z-30 mx-4 sm:mx-6 lg:mx-8 max-w-7xl xl:mx-auto">
@@ -132,7 +134,7 @@ export default function App() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
-            <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-foreground whitespace-nowrap bg-white/50 backdrop-blur-sm px-4 py-3 rounded-full border border-border/50 shadow-soft hover:bg-white/80 transition-colors">
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-foreground whitespace-nowrap hover:text-primary transition-colors py-2">
               <input
                 type="checkbox"
                 checked={searchLocal}
@@ -149,6 +151,7 @@ export default function App() {
               type="text"
               placeholder={searchLocal ? "내 책장 검색" : "알라딘 도서 검색"}
               value={searchQuery}
+              onFocus={(e) => e.currentTarget.select()}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 if (e.target.value.trim() === '') {
@@ -192,6 +195,7 @@ export default function App() {
                 key={book.id} 
                 book={book} 
                 onClick={setSelectedBook}
+                onDelete={handleDeleteBook}
                 index={index}
               />
             ))}
@@ -201,7 +205,7 @@ export default function App() {
                 setInitialBookData(null);
                 setIsAddModalOpen(true);
               }}
-              className="flex flex-col items-center justify-center gap-4 bg-[#FEFEFA] border-2 border-dashed border-border/80 rounded-2xl hover:border-primary/50 hover:bg-white/50 transition-all duration-300 group min-h-[220px]"
+              className="flex flex-col items-center justify-center gap-4 bg-[#FEFEFA] border-2 border-dashed border-border/80 rounded-[2rem] hover:border-primary/50 hover:bg-white/50 transition-all duration-300 group min-h-[220px]"
             >
               <div className="w-14 h-14 bg-primary/10 rounded-[1.5rem] flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
                 <Plus className="w-7 h-7 text-primary" />

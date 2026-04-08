@@ -43,8 +43,8 @@ export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBoo
       // Only search if user typed something and it's not exactly what was just filled from a click
       if (title.trim().length > 1 && showDropdown) {
         setIsSearching(true);
-        const results = await searchBooks(title);
-        setSearchResults(results);
+        const { books } = await searchBooks(title);
+        setSearchResults(books);
         setIsSearching(false);
       } else {
         setSearchResults([]);
