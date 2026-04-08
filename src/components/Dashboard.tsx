@@ -41,11 +41,11 @@ export const Dashboard = memo(function Dashboard({ books }: DashboardProps) {
           <div 
             key={stat.label} 
             className={cn(
-              "group bg-[#FEFEFA] px-6 py-4 border border-border/50 shadow-soft flex flex-col gap-3 transition-all duration-500 hover:-translate-y-1 hover:shadow-float relative overflow-hidden",
+              "group bg-[#FEFEFA] px-6 py-4 border border-border/50 shadow-soft flex flex-col gap-3 transition-all duration-500 hover:-translate-y-1 hover:shadow-float relative overflow-hidden will-change-transform",
               stat.radius
             )}
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 blur-2xl rounded-full mix-blend-multiply -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-accent/20 transition-colors duration-500" />
             
             <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
               <Icon className="w-7 h-7" />

@@ -138,7 +138,7 @@ export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBoo
         className="bg-[#FEFEFA] rounded-[2rem] shadow-float border border-border/50 w-full max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden hide-scrollbar relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/30 blur-3xl rounded-full mix-blend-multiply -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-accent/20 blur-xl rounded-full mix-blend-multiply -translate-y-1/2 translate-x-1/2 pointer-events-none" />
         
         <div className="sticky top-0 bg-[#FEFEFA]/80 backdrop-blur-md border-b border-border/50 px-8 py-6 flex items-center justify-between z-10">
           <h2 className="text-2xl font-bold text-foreground">새로운 책 기록하기</h2>

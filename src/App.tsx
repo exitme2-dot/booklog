@@ -85,9 +85,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-32 relative overflow-hidden">
-      {/* Ambient Blobs - Scaled down for better performance */}
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-accent/30 blur-2xl rounded-full mix-blend-multiply -translate-x-1/2 -translate-y-1/2 -z-10" />
-      <div className="absolute top-40 right-0 w-[300px] h-[300px] bg-muted/40 blur-2xl rounded-full mix-blend-multiply translate-x-1/3 -z-10" />
+      {/* Ambient Blobs - Optimized for performance */}
+      <div className="absolute top-0 left-0 w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-accent/20 blur-2xl rounded-full mix-blend-multiply -translate-x-1/4 -translate-y-1/4 -z-10 pointer-events-none" />
 
       {/* Header */}
       <header className="sticky top-4 z-30 mx-4 sm:mx-6 lg:mx-8 max-w-7xl xl:mx-auto">

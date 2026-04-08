@@ -29,7 +29,7 @@ export const BookCard = memo(function BookCard({ book, onClick, onDelete, index 
       onClick={() => onClick(book)}
       onMouseLeave={() => setIsDeleting(false)}
       className={cn(
-        "group flex flex-col bg-[#FEFEFA] border border-border/50 overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:rotate-1 hover:shadow-float shadow-soft",
+        "group flex flex-col bg-[#FEFEFA] border border-border/50 overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:rotate-1 hover:shadow-float shadow-soft will-change-transform",
         cardRadius
       )}
     >

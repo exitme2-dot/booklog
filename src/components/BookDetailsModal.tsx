@@ -54,7 +54,7 @@ export function BookDetailsModal({ book, isOpen, onClose, onDelete }: BookDetail
         className="bg-[#FEFEFA] rounded-[2rem] shadow-float border border-border/50 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row relative overflow-x-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 blur-3xl rounded-full mix-blend-multiply translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/10 blur-xl rounded-full mix-blend-multiply translate-y-1/2 -translate-x-1/4 pointer-events-none" />
         
         {/* Left column: Cover */}
         <div className="w-full md:w-2/5 bg-muted/30 relative flex items-center justify-center p-8 border-r border-border/50">
