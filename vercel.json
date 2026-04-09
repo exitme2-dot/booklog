@@ -1,8 +1,13 @@
 {
+  "version": 2,
   "rewrites": [
     {
       "source": "/aladin-api/(.*)",
       "destination": "http://www.aladin.co.kr/ttb/api/$1"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/server.js"
     },
     {
       "source": "/(.*)",
