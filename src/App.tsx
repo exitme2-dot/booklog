@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Book, BookStatus } from './types';
-import { getBooks, saveBooks } from './lib/storage';
+import { getBooks, saveBooks, addBookToServer, deleteBookFromServer, migrateLibraryFromLocalStorage } from './lib/storage';
 import { Dashboard } from './components/Dashboard';
 import { BookCard } from './components/BookCard';
 import { AddBookModal } from './components/AddBookModal';
@@ -58,19 +58,27 @@ export default function App() {
   };
 
   useEffect(() => {
-    setBooks(getBooks());
+    const initApp = async () => {
+      // 1. Try to migrate from local storage first
+      const migrated = await migrateLibraryFromLocalStorage();
+      // 2. Fetch books from server
+      const serverBooks = await getBooks();
+      setBooks(serverBooks);
+    };
+    
+    initApp();
   }, []);
 
-  const handleAddBook = (newBook: Book) => {
+  const handleAddBook = async (newBook: Book) => {
     const updatedBooks = [newBook, ...books];
     setBooks(updatedBooks);
-    saveBooks(updatedBooks);
+    await addBookToServer(newBook);
   };
 
-  const handleDeleteBook = (id: string) => {
+  const handleDeleteBook = async (id: string) => {
     const updatedBooks = books.filter(b => b.id !== id);
     setBooks(updatedBooks);
-    saveBooks(updatedBooks);
+    await deleteBookFromServer(id);
   };
 
   const filteredBooks = useMemo(() => {

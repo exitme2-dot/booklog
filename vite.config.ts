@@ -24,6 +24,10 @@ export default defineConfig(({mode}) => {
           target: 'http://www.aladin.co.kr/ttb/api',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/aladin-api/, '')
+        },
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true
         }
       }
     },
