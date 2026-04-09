@@ -1,0 +1,60 @@
+[
+  {
+    "id": "2473025b-549d-488a-8ce7-7f1553a674eb",
+    "title": "선물 - 조금 다른 아이를 키우는 분들에게 드리는",
+    "author": "김석주, 박현주, 부경희, 한재희 (지은이)",
+    "coverImage": "https://image.aladin.co.kr/product/26812/40/coversum/k322730194_1.jpg",
+    "status": "want-to-read",
+    "rating": 0,
+    "review": "수진 추천책!!",
+    "startDate": "2026-04-09",
+    "endDate": "2026-04-23",
+    "createdAt": "2026-04-09T04:59:04.125Z"
+  },
+  {
+    "id": "ad739fff-5df0-4c62-b651-4824c64d1904",
+    "title": "비폭력대화 워크북 - 개인과 연습모임을 위한 가이드, 개정증보판",
+    "author": "루시 루 (지은이), 한국NVC센터 (옮긴이)",
+    "coverImage": "https://image.aladin.co.kr/product/13626/59/coversum/k812532114_1.jpg",
+    "status": "want-to-read",
+    "rating": 0,
+    "review": "수진 추천책!!",
+    "startDate": "2026-04-09",
+    "endDate": "2026-04-23",
+    "createdAt": "2026-04-09T04:56:54.174Z"
+  },
+  {
+    "id": "0d76153a-2279-4c72-9781-132a42063410",
+    "title": "아티스트 웨이 : 30주년 기념 특별판",
+    "author": "줄리아 캐머런 (지은이), 박미경 (옮긴이)",
+    "coverImage": "https://image.aladin.co.kr/product/36659/19/coversum/k432030086_1.jpg",
+    "status": "want-to-read",
+    "rating": 0,
+    "review": "수진 추천 책!!\n3 페이지 무작정 작성하기! 아이디어 확장!!",
+    "startDate": "2026-04-09",
+    "endDate": "2026-04-23",
+    "createdAt": "2026-04-09T04:52:55.324Z"
+  },
+  {
+    "id": "1246f211-1df0-487f-ab8f-a67124b06220",
+    "title": "설자은, 불꽃을 쫓다",
+    "author": "정세랑 (지은이)",
+    "coverImage": "https://image.aladin.co.kr/product/35598/7/coversum/k632036994_1.jpg",
+    "status": "want-to-read",
+    "rating": 0,
+    "startDate": "2026-04-09",
+    "endDate": "2026-04-23",
+    "createdAt": "2026-04-09T04:31:58.701Z"
+  },
+  {
+    "id": "474d2fb3-bc2c-4d39-996b-5c9c9264eca3",
+    "title": "보건교사 안은영 (특별판)",
+    "author": "정세랑 (지은이)",
+    "coverImage": "https://image.aladin.co.kr/product/25128/11/coversum/8937479958_2.jpg",
+    "status": "completed",
+    "rating": 0,
+    "startDate": "2026-04-09",
+    "endDate": "2026-04-23",
+    "createdAt": "2026-04-09T04:31:20.596Z"
+  }
+]
