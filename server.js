@@ -11,6 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 const BOOKS_FILE = path.join(__dirname, 'books.json');
+const LIBRARY_MD = path.join(__dirname, 'my_library.md');
 const KV_KEY = 'booklog_books';
 
 // Memory Cache
@@ -72,6 +73,18 @@ async function saveBooksToDisk() {
   }
 }
 
+// Append to Markdown Library
+async function appendToMarkdown(book) {
+  try {
+    const date = new Date().toLocaleDateString('ko-KR');
+    const mdContent = `\n### ${book.title}\n- 저자: ${book.author}\n- 평점: ${'⭐'.repeat(book.rating || 0)}\n- 기록일: ${date}\n> ${book.review || '한줄평이 없습니다.'}\n\n---\n`;
+    await fs.appendFile(LIBRARY_MD, mdContent, 'utf-8');
+    console.log(`Added '${book.title}' to my_library.md`);
+  } catch (error) {
+    console.error('Failed to append to Markdown library:', error);
+  }
+}
+
 loadBooks();
 
 // API Endpoints
@@ -84,11 +97,18 @@ app.post('/api/books/add', async (req, res) => {
     const newBook = req.body;
     booksCache = [newBook, ...booksCache];
     await syncStorage();
+    
+    // Add to Markdown library (Only locally or where FS is writable)
+    if (!isKvEnabled) {
+      await appendToMarkdown(newBook);
+    }
+    
     res.status(201).json({ message: 'Book added' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to add book' });
   }
 });
+
 
 app.delete('/api/books/:id', async (req, res) => {
   const { id } = req.params;
