@@ -141,8 +141,10 @@ export default function App() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
-            <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-foreground whitespace-nowrap hover:text-primary transition-colors py-2">
+            <label htmlFor="local-search-checkbox" className="flex items-center gap-2 cursor-pointer text-sm font-bold text-foreground whitespace-nowrap hover:text-primary transition-colors py-2">
               <input
+                id="local-search-checkbox"
+                name="searchLocal"
                 type="checkbox"
                 checked={searchLocal}
                 onChange={(e) => setSearchLocal(e.target.checked)}
@@ -155,6 +157,8 @@ export default function App() {
               <Search className="h-5 w-5 text-muted-foreground" />
             </div>
             <input
+              id="main-search-input"
+              name="search"
               type="text"
               placeholder={searchLocal ? "내 책장 검색" : "알라딘 도서 검색"}
               value={searchQuery}

@@ -164,11 +164,13 @@ export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBoo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div ref={searchContainerRef} className="relative z-20">
-                <label className="block text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <label htmlFor="title-input" className="block text-sm font-bold text-foreground mb-2 flex items-center gap-2">
                   <Search className="w-4 h-4 text-primary" /> 제목 검색 및 입력 *
                 </label>
                 <div className="relative">
                   <input 
+                    id="title-input"
+                    name="title"
                     type="text" 
                     required
                     value={title}
@@ -248,8 +250,10 @@ export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBoo
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-foreground mb-2">저자 *</label>
+                <label htmlFor="author-input" className="block text-sm font-bold text-foreground mb-2">저자 *</label>
                 <input 
+                  id="author-input"
+                  name="author"
                   type="text" 
                   required
                   value={author}
@@ -330,8 +334,10 @@ export function AddBookModal({ isOpen, onClose, onAdd, initialBookData }: AddBoo
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-foreground mb-2">리뷰 및 메모</label>
+            <label htmlFor="review-input" className="block text-sm font-bold text-foreground mb-2">리뷰 및 메모</label>
             <textarea 
+              id="review-input"
+              name="review"
               value={review}
               onChange={(e) => setReview(e.target.value)}
               rows={5}
