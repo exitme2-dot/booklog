@@ -4,7 +4,12 @@ import { Book } from '../types';
 export const getBooks = async (): Promise<Book[]> => {
   try {
     const response = await axios.get('/api/books');
-    return response.data;
+    // Ensure the response is an array before returning
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    console.error('Server response is not an array:', response.data);
+    return [];
   } catch (error) {
     console.error('Failed to load books from server', error);
     return [];

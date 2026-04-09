@@ -78,26 +78,39 @@ async function updateGithubFile(filePath, content, message, sha = null) {
  * 서버가 켜질 때 GitHub(또는 로컬 파일)에서 데이터를 읽어와서 메모리에 담습니다.
  */
 async function loadBooks() {
-  if (isGithubEnabled) {
-    console.log('GitHub API를 통해 데이터를 불러오는 중...');
-    const file = await getGithubFile(BOOKS_FILE_PATH);
-    if (file) {
-      booksCache = JSON.parse(file.content);
-      console.log(`GitHub에서 ${booksCache.length}개의 도서를 불러왔습니다.`);
+  try {
+    if (isGithubEnabled) {
+      console.log('GitHub API를 통해 데이터를 불러오는 중...');
+      const file = await getGithubFile(BOOKS_FILE_PATH);
+      if (file) {
+        try {
+          const parsed = JSON.parse(file.content);
+          booksCache = Array.isArray(parsed) ? parsed : [];
+          console.log(`GitHub에서 ${booksCache.length}개의 도서를 불러왔습니다.`);
+        } catch (parseError) {
+          console.error('GitHub 데이터 파싱 실패 (JSON 형식 오류):', parseError.message);
+          booksCache = [];
+        }
+      } else {
+        console.log('GitHub에 데이터 파일이 없습니다. 새로 시작합니다.');
+        booksCache = [];
+      }
     } else {
-      console.log('GitHub에 데이터 파일이 없습니다. 새로 시작합니다.');
-      booksCache = [];
+      // 로컬 개발 환경일 때 실행됨
+      try {
+        await fs.access(LOCAL_BOOKS_FILE);
+        const data = await fs.readFile(LOCAL_BOOKS_FILE, 'utf-8');
+        const parsed = JSON.parse(data);
+        booksCache = Array.isArray(parsed) ? parsed : [];
+        console.log('로컬 파일에서 데이터를 불러왔습니다.');
+      } catch (err) {
+        console.warn('로컬 파일 로드 실패 또는 데이터 형식 오류:', err.message);
+        booksCache = [];
+      }
     }
-  } else {
-    // 로컬 개발 환경일 때 실행됨
-    try {
-      await fs.access(LOCAL_BOOKS_FILE);
-      const data = await fs.readFile(LOCAL_BOOKS_FILE, 'utf-8');
-      booksCache = JSON.parse(data);
-      console.log('로컬 파일에서 데이터를 불러왔습니다.');
-    } catch {
-      booksCache = [];
-    }
+  } catch (globalError) {
+    console.error('데이터 로드 중 치명적 오류:', globalError.message);
+    booksCache = [];
   }
 }
 
