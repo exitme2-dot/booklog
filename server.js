@@ -14,9 +14,9 @@ const PORT = process.env.PORT || 5000;
 // === [설정 단계 1] GitHub 연동 정보 설정 ===
 // GitHub에서 발급받은 토큰을 환경 변수에서 가져옵니다.
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-// 해당 저장소의 소유자(ID)와 저장소 이름을 설정합니다.
-const OWNER = 'exitme2-dot';
-const REPO = 'booklog';
+// 해당 저장소의 소유자(ID)와 저장소 이름을 설정합니다. (환경 변수 또는 기본값)
+const OWNER = process.env.GITHUB_OWNER || 'exitme2-dot';
+const REPO = process.env.GITHUB_REPO || 'booklog';
 const BOOKS_FILE_PATH = 'books.json';
 const LIBRARY_MD_PATH = 'my_library.md';
 
@@ -28,7 +28,7 @@ const octokit = new Octokit({ auth: GITHUB_TOKEN });
 // 메모리 내에 도서 목록을 임시 저장할 변수입니다.
 let booksCache = [];
 // GitHub 토큰이 설정되어 있는지 확인하여 클라우드 저장 모드를 결정합니다.
-let isGithubEnabled = !!GITHUB_TOKEN;
+let isGithubEnabled = !!GITHUB_TOKEN && !!process.env.GITHUB_OWNER && !!process.env.GITHUB_REPO;
 
 app.use(compression());
 app.use(express.json());
@@ -146,8 +146,51 @@ async function appendToMarkdownGithub(book) {
   console.log(`GitHub 'my_library.md'에 '${book.title}' 정보가 기록되었습니다.`);
 }
 
-// 서버 시작 시 데이터 로드 실행
-loadBooks();
+/**
+ * === [기능 6] GitHub 설정 검증 ===
+ * 서버 시작 시 GitHub 토큰과 저장소 설정이 유효한지 확인합니다.
+ */
+async function validateGithubSetup() {
+  if (!GITHUB_TOKEN) {
+    console.log('[STORAGE] GitHub 토큰이 설정되지 않았습니다. 로컬 파일 모드로 실행합니다.');
+    isGithubEnabled = false;
+    return;
+  }
+
+  if (!process.env.GITHUB_OWNER || !process.env.GITHUB_REPO) {
+    console.warn('[STORAGE] GITHUB_OWNER 또는 GITHUB_REPO가 설정되지 않았습니다. 안전을 위해 로컬 모드로 전환합니다.');
+    isGithubEnabled = false;
+    return;
+  }
+
+  try {
+    // 가장 가벼운 API 호출로 토큰 및 권한 확인
+    const { data: user } = await octokit.rest.users.getAuthenticated();
+    console.log(`[GITHUB] 토큰 인증 성공: ${user.login} (ID: ${user.id})`);
+    
+    // 저장소 접근 권한 확인
+    await octokit.repos.get({ owner: OWNER, repo: REPO });
+    console.log(`[GITHUB] 저장소 연결 성공: ${OWNER}/${REPO}`);
+    isGithubEnabled = true;
+  } catch (error) {
+    console.error('[GITHUB] 연동 실패:', error.message);
+    if (error.status === 401) {
+      console.error('  -> 이유: 잘못된 토큰이거나 토큰이 만료되었습니다.');
+    } else if (error.status === 404) {
+      console.error('  -> 이유: 저장소를 찾을 수 없거나 접근 권한이 없습니다.');
+    }
+    console.log('[STORAGE] GitHub 연동 오류로 인해 로컬 파일 모드로 실행합니다.');
+    isGithubEnabled = false;
+  }
+}
+
+// 서버 시작 시 데이터 로드 및 검증 실행
+async function startServer() {
+  await validateGithubSetup();
+  await loadBooks();
+}
+
+startServer();
 
 // --- API 엔드포인트 설정 ---
 
