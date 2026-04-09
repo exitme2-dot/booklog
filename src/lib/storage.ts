@@ -43,16 +43,24 @@ export const migrateLibraryFromLocalStorage = async (): Promise<boolean> => {
     if (localData) {
       const books = JSON.parse(localData);
       if (Array.isArray(books) && books.length > 0) {
-        // Send to server (using the full update fallback)
-        await saveBooks(books);
-        // Clear local storage to prevent duplicate migration
-        localStorage.removeItem(OLD_STORAGE_KEY);
-        console.log('Successfully migrated data from LocalStorage to server.');
-        return true;
+        // Send to server (using the full update)
+        try {
+          // saveBooks returns void, but if it throws or we update it to return success...
+          // Currently saveBooks catches internally. Let's make it simpler.
+          await axios.post('/api/books', books);
+          
+          // Clear local storage ONLY after successful server post
+          localStorage.removeItem(OLD_STORAGE_KEY);
+          console.log('Successfully migrated data from LocalStorage to server.');
+          return true;
+        } catch (serverError) {
+          console.error('Failed to migrate data to server. Keeping local copy.', serverError);
+          return false;
+        }
       }
     }
   } catch (error) {
-    console.error('Migration failed:', error);
+    console.error('Migration check failed:', error);
   }
   return false;
 };

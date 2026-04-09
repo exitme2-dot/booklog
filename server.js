@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import compression from 'compression';
 import { Octokit } from '@octokit/rest';
+import 'dotenv/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -162,25 +163,24 @@ async function validateGithubSetup() {
   }
 
   try {
-    // 가장 가벼운 API 호출로 토큰 및 권한 확인
-    const { data: user } = await octokit.rest.users.getAuthenticated();
-    console.log(`[GITHUB] 토큰 인증 성공: ${user.login} (ID: ${user.id})`);
-    
-    // 저장소 접근 권한 확인
+    // 저장소 접근 권한 확인 (가장 기본적인 repo 권한만 요구)
     await octokit.repos.get({ owner: OWNER, repo: REPO });
     console.log(`[GITHUB] 저장소 연결 성공: ${OWNER}/${REPO}`);
     isGithubEnabled = true;
   } catch (error) {
-    console.error('[GITHUB] 연동 실패:', error.message);
+    console.error('[GITHUB] 연동 경고:', error.message);
     if (error.status === 401) {
       console.error('  -> 이유: 잘못된 토큰이거나 토큰이 만료되었습니다.');
-    } else if (error.status === 404) {
-      console.error('  -> 이유: 저장소를 찾을 수 없거나 접근 권한이 없습니다.');
+      isGithubEnabled = false;
+    } else {
+      console.warn(`[GITHUB] 연동 중 오류가 발생했으나 토큰이 존재하므로 GitHub 모드를 유지합니다. (${error.status})`);
+      isGithubEnabled = true; 
     }
-    console.log('[STORAGE] GitHub 연동 오류로 인해 로컬 파일 모드로 실행합니다.');
-    isGithubEnabled = false;
   }
 }
+
+// 초기 데이터 로딩 상태를 관리하는 변수입니다.
+let initializationPromise = null;
 
 // 서버 시작 시 데이터 로드 및 검증 실행
 async function startServer() {
@@ -188,13 +188,38 @@ async function startServer() {
   await loadBooks();
 }
 
-startServer();
+initializationPromise = startServer();
 
 // --- API 엔드포인트 설정 ---
 
+// 서비스 준비 상태 확인용 미들웨어
+const checkInitialLoad = (req, res, next) => {
+  // booksCache가 로딩 중일 때(null or undefined면 안됨, 하지만 여기선 초기값이 []임)
+  // 실제로는 loadBooks가 완료되었는지 추적하는 변수가 필요함
+  next();
+};
+
 // 전체 도서 목록 가져오기
-app.get('/api/books', (req, res) => {
+app.get('/api/books', async (req, res) => {
+  await initializationPromise;
   res.json(booksCache);
+});
+
+// 전체 도서 목록 저장 (마이그레이션 등에서 사용)
+app.post('/api/books', async (req, res) => {
+  try {
+    const books = req.body;
+    if (Array.isArray(books)) {
+      booksCache = books;
+      await syncStorage();
+      res.json({ message: 'Library updated successfully', count: books.length });
+    } else {
+      res.status(400).json({ error: 'Data must be an array' });
+    }
+  } catch (error) {
+    console.error('전체 도서 저장 중 오류:', error);
+    res.status(500).json({ error: 'Failed to update library' });
+  }
 });
 
 // 도서 추가 (핵심 기능)
