@@ -28,7 +28,7 @@ const octokit = new Octokit({ auth: GITHUB_TOKEN });
 // 메모리 내에 도서 목록을 임시 저장할 변수입니다.
 let booksCache = [];
 // GitHub 토큰이 설정되어 있는지 확인하여 클라우드 저장 모드를 결정합니다.
-let isGithubEnabled = !!GITHUB_TOKEN && !!process.env.GITHUB_OWNER && !!process.env.GITHUB_REPO;
+let isGithubEnabled = !!GITHUB_TOKEN;
 
 app.use(compression());
 app.use(express.json());
@@ -158,9 +158,7 @@ async function validateGithubSetup() {
   }
 
   if (!process.env.GITHUB_OWNER || !process.env.GITHUB_REPO) {
-    console.warn('[STORAGE] GITHUB_OWNER 또는 GITHUB_REPO가 설정되지 않았습니다. 안전을 위해 로컬 모드로 전환합니다.');
-    isGithubEnabled = false;
-    return;
+    console.log(`[STORAGE] GITHUB_OWNER 또는 REPO가 설정되지 않았습니다. 기본 설정(${OWNER}/${REPO})을 사용합니다.`);
   }
 
   try {
